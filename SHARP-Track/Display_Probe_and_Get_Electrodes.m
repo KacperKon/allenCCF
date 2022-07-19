@@ -28,8 +28,8 @@ probes_to_analyze = 'all';  % [1 2]
 probe_lengths = 3.5; 
 
 % from the bottom tip, how much of the probe contained recording sites -- in mm
-active_probe_length = 0.72*2; % 720 um is one block in Neuropixels 2.0
-row_spacing = 0.015; % vertical distance between rows of electrodes
+active_probe_length = 0.72*2; % 720 um is one block in Neuropixels 2.0 in 4-shank configuration
+row_spacing = 0.015; % vertical distance between rows of electrodes (0.015 for NP2.0)
 
 % distance queried for confidence metric -- in um
 probe_radius = 100; 

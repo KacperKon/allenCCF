@@ -97,10 +97,10 @@ dv = (brain_points(:,2)-bregma(2))*atlas_resolution;
 ml = (brain_points(:,3)-bregma(3))*atlas_resolution;
 
 % generate table
-shank_tab = repelem(shank-1, length(from_tip))';
+shank_tab = repelem(shank, length(from_tip))';
 data_table = table(shank_tab, from_tip, annotation_CCF(:,2),annotation_CCF(:,3), annotation_FP(:,2),annotation_FP(:,3),...
                         ap,dv,ml, annotation_CCF(:,1), annotation_FP(:,1),...
-         'VariableNames', {'Shank', 'Pos_from_tip', 'CCF_name', 'CCF_abbrv', 'FP_name', 'FP_abbrv', 'AP_location', 'DV_location', 'ML_location', 'CCF_index', 'FP_index'});
+         'VariableNames', {'Probe', 'Pos_from_tip', 'CCF_name', 'CCF_abbrv', 'FP_name', 'FP_abbrv', 'AP_location', 'DV_location', 'ML_location', 'CCF_index', 'FP_index'});
 
 full_table = [full_table; data_table];
 
