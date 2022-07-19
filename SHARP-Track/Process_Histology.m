@@ -8,14 +8,15 @@
 % * remember to run one cell at a time, instead of the whole script at once *
 
 % directory of histology images
-image_folder = 'C:\Drive\Histology\cfos';
+image_folder = 'C:\Users\Kacper\Desktop\LDTg\histology\KK013_CCF\raw';
 
 % directory to save the processed images -- can be the same as the above image_folder
 % results will be put inside a new folder called 'processed' inside of this image_folder
-save_folder = 'C:\Drive\Histology\cfos';
+save_folder = 'C:\Users\Kacper\Desktop\LDTg\histology\KK013_CCF';
 
 % name of images, in order anterior to posterior or vice versa
 % once these are downsampled they will be named ['original name' '_processed.tif']
+%image_file_names = dir([image_folder filesep '*.tiff']); % get the contents of the image_folder
 image_file_names = dir([image_folder filesep '*.tif']); % get the contents of the image_folder
 image_file_names = natsortfiles({image_file_names.name});
 % image_file_names = {'slide no 2_RGB.tif','slide no 3_RGB.tif','slide no 4_RGB.tif'}; % alternatively, list each image in order
@@ -25,13 +26,13 @@ image_file_names = natsortfiles({image_file_names.name});
 image_files_are_individual_slices = true;
 
 % use images that are already at reference atlas resolution (here, 10um/pixel)
-use_already_downsampled_image = true; 
+use_already_downsampled_image = false; 
 
 % pixel size parameters: microns_per_pixel of large images in the image
 % folder (if use_already_downsampled_images is set to false);
 % microns_per_pixel_after_downsampling should typically be set to 10 to match the atlas
-microns_per_pixel = 3.233;
-microns_per_pixel_after_downsampling = 10;
+microns_per_pixel = 0.847;
+microns_per_pixel_after_downsampling = 3;
 
 
 % ----------------------
@@ -57,9 +58,6 @@ elseif strcmp(plane,'sagittal')
 elseif strcmp(plane,'transverse')
     atlas_reference_size = [1140 1320];
 end
-
-
-
 
 
 
@@ -129,5 +127,3 @@ close all
 % sure to do this even after modifying the last slice in the folder
 slice_figure = figure('Name','Slice Viewer');
 SliceFlipper(slice_figure, folder_processed_images, atlas_reference_size)
-
-

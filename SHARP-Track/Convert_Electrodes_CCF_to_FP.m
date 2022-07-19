@@ -1,6 +1,7 @@
 % ----------------------------------------------------------------------------
-%
+%         Read electrode coordinates
 %         Convert Allen CCF indices to Franklin-Paxinos labels
+%         Export table with anatomical label of each electrode
 %
 %   Based on data from Chon et al. Enhanced and unified anatomical labeling 
 %   for a common mouse brain atlas (2020).
@@ -10,36 +11,13 @@
 
 %% Start with coordinates within the Allen CCF mouse brain atlas
 % in the form [AP1, DV1, ML1
-%              AP2, DV2, ML2] 
+%              AP2, DV2, ML2]
 
-% This example is of points along a neuropixels probe track through cortex, SC, PAG
-brain_points =    [893   189   475
-                   890    57   454
-                   891   114   468
-                   922   156   482
-                   923   114   472
-                   920   215   492
-                   920   268   505
-                   954   199   479
-                   948   256   491
-                   943   312   508
-                   938   369   525
-                   932   421   537
-                   928   471   551
-                   951   281   507
-                   944   342   522
-                   937   400   538
-                   931   450   551];
-               
-brain_points = pointList.pointList{2,1};
-
-brain_points = [1068 399 708
-                1068 421 702
-                1068 449 701
-                1068 469 698
-                1068 495 693
-                1068 512 692];
-               
+output_folder = 'C:\Users\Kacper\Desktop\LDTg\histology\KK013_CCF\processed';
+electrode_points_file = 'C:\Users\Kacper\Desktop\LDTg\histology\KK013_CCF\processed\electrode_points.mat';
+load(electrode_points_file);
+probes = [1 2 3 4]; % probes (==shanks) tracked on earlier steps
+          
 % directory of reference files
 annotation_volume_location = 'C:\Users\Kacper\Desktop\AllenAtlas\annotation_volume_10um_by_index.npy'; % from the allen inst (see readme)
 structure_tree_location = 'C:\Users\Kacper\Desktop\AllenAtlas\structure_tree_safe_2017.csv'; % located in github repo
@@ -68,12 +46,27 @@ if ~exist('CCFtoFPtable','var') || ~exist('FPtable','var')
     FPtable = loadFPtable(FP_table_location);
 end
 
-% initialize array of region annotations
+%% plot empty wire frame brain
+fwireframe = plotBrainGrid([], [], [], black_brain); hold on; 
+fwireframe.InvertHardcopy = 'off';
+figure(fwireframe); hold on
+
+%% Loop through all the shanks and save all results as a table
+full_table = [];
+
+for shank = probes
+    
+brain_points = electrodePoints{shank}.brain_coord;
+from_tip = electrodePoints{shank}.from_tip;
+    
+% to read the manually selected points, not electrodes from each shank:
+%brain_points = pointList.pointList{shank,1}(:,[3, 2, 1]); 
+        
+%% initialize array of region annotations
 annotation_CCF = cell(size(brain_points,1),3);    
-annotation_FP = cell(size(brain_points,1),3);  
+annotation_FP = cell(size(brain_points,1),3); 
 
 %% process data
-
 % loop through every point to get ROI locations and region annotations
 for point = 1:size(brain_points,1)
 
@@ -104,23 +97,19 @@ dv = (brain_points(:,2)-bregma(2))*atlas_resolution;
 ml = (brain_points(:,3)-bregma(3))*atlas_resolution;
 
 % generate table
-data_table = table(annotation_CCF(:,2),annotation_CCF(:,3), annotation_FP(:,2),annotation_FP(:,3),...
+shank_tab = repelem(shank-1, length(from_tip))';
+data_table = table(shank_tab, from_tip, annotation_CCF(:,2),annotation_CCF(:,3), annotation_FP(:,2),annotation_FP(:,3),...
                         ap,dv,ml, annotation_CCF(:,1), annotation_FP(:,1),...
-         'VariableNames', {'CCF_name', 'CCF_abbrv', 'FP_name', 'FP_abbrv', 'AP_location', 'DV_location', 'ML_location', 'CCF_index', 'FP_index'});
+         'VariableNames', {'Shank', 'Pos_from_tip', 'CCF_name', 'CCF_abbrv', 'FP_name', 'FP_abbrv', 'AP_location', 'DV_location', 'ML_location', 'CCF_index', 'FP_index'});
 
+full_table = [full_table; data_table];
 
-
-%% display results
-
-% plot points on the wire frame brain
-fwireframe = plotBrainGrid([], [], [], black_brain); hold on; 
-fwireframe.InvertHardcopy = 'off';
-figure(fwireframe); hold on
+%% plot results
 hp = plot3(brain_points(:,1), brain_points(:,3), brain_points(:,2), '.','linewidth',2, 'color',brain_points_color,'markers',10);   
 
-% display table
-disp(data_table)
+end
 
-
-
-
+%% Display and save the results
+disp(full_table);
+writetable(full_table, fullfile(output_folder, 'brain_structures.csv'));
+disp('Results saved as .csv table');

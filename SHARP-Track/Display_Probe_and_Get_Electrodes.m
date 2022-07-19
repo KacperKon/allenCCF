@@ -1,5 +1,6 @@
 % ------------------------------------------------------------------------
 %          Display Probe Track
+%          Get coordinates of each row of electrodes 
 % ------------------------------------------------------------------------
 
 %% ENTER PARAMETERS AND FILE LOCATION
@@ -27,7 +28,8 @@ probes_to_analyze = 'all';  % [1 2]
 probe_lengths = 3.5; 
 
 % from the bottom tip, how much of the probe contained recording sites -- in mm
-active_probe_length = 3.5;
+active_probe_length = 0.72*2; % 720 um is one block in Neuropixels 2.0
+row_spacing = 0.015; % vertical distance between rows of electrodes
 
 % distance queried for confidence metric -- in um
 probe_radius = 100; 
@@ -41,6 +43,9 @@ distance_past_tip_to_plot = 0;
 % set scaling e.g. based on lining up the ephys with the atlas
 % set to *false* to get scaling automatically from the clicked points
 scaling_factor = false;
+% set following to false to scale only overall probe length (= insertion depth), 
+% but not the length of active site, which is determined by electrodes spacing
+scale_active_site = false;
 
 
 % ---------------------
@@ -88,6 +93,7 @@ ProbeColors = .75*[1.3 1.3 1.3; 1 .75 0;  .3 1 1; .4 .6 .2; 1 .35 .65; .7 .7 .9;
 fwireframe = [];
 
 % scale active_probe_length appropriately
+active_probe_length_mm = active_probe_length;
 active_probe_length = active_probe_length*100;
 
 % determine which probes to analyze
@@ -104,6 +110,8 @@ end
 fwireframe = plotBrainGrid([], [], fwireframe, black_brain);
 hold on; 
 fwireframe.InvertHardcopy = 'off';
+
+electrodePoints = {}; % for storing position of each electrodes row
 
 for selected_probe = probes
     
@@ -200,9 +208,39 @@ end
 
 % find the percent of the probe occupied by electrodes
 percent_of_tract_with_active_sites = min([active_probe_length / (probe_length*100), 1.0]);
-active_site_start = probe_length_histo*(1-percent_of_tract_with_active_sites);
+
+if scale_active_site == false
+    active_site_start = probe_length_histo - active_probe_length;
+else
+    active_site_start = probe_length_histo*(1-percent_of_tract_with_active_sites);
+end
+
 active_probe_position = round([active_site_start  probe_length_histo]);
 
+
+%% This section gets points lying along the shank (corresponding to each row)
+% Necessary to later convert from Allen to Kim lab atlas labels and get
+% structure name for each electrode (using function Convert_Electrodes_CCF_to_FP)
+num_el = active_probe_length_mm / row_spacing; % number of total electrode rows
+xyz_order = [1,3,2]; % order recquired for converting to FP: AP, DV, ML
+
+X = m(1)+p(1)*[active_probe_position(1) active_probe_position(2)]; 
+Y = m(3)+p(3)*[active_probe_position(1) active_probe_position(2)]; 
+Z = m(2)+p(2)*[active_probe_position(1) active_probe_position(2)];
+electrode_pos=[linspace(X(1),X(2),num_el).' linspace(Y(1),Y(2),num_el).' linspace(Z(1),Z(2),num_el).'];
+
+electrode_pos = round(electrode_pos(:,xyz_order));
+pos_from_tip = flip([0:row_spacing:active_probe_length_mm-row_spacing]');
+pos_from_tip = int16(pos_from_tip*1000); % now in um from tip (as Kilosort does)
+
+electrodePoints{selected_probe}.brain_coord = electrode_pos;
+electrodePoints{selected_probe}.from_tip = pos_from_tip;
+
+%plot3(X, Y, Z, '-o')
+%plot3(xyz(:,1),xyz(:,2),xyz(:,3), '-o')
+
+
+%%
 % plot line the length of the active probe sites in reference space
 plot3(m(1)+p(1)*[active_probe_position(1) active_probe_position(2)], m(3)+p(3)*[active_probe_position(1) active_probe_position(2)], m(2)+p(2)*[active_probe_position(1) active_probe_position(2)], ...
     'Color', ProbeColors(selected_probe,:), 'LineWidth', 1);
@@ -224,3 +262,7 @@ title(['Probe ' num2str(selected_probe)],'color',ProbeColors(selected_probe,:))
 
 pause(.05)
 end
+
+%% Store electrode rows location
+save(fullfile(processed_images_folder ,['electrode_points' probe_save_name_suffix]), 'electrodePoints');
+disp('Results saved into electrode_points.mat');

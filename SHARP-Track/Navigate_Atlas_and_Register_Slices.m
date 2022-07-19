@@ -7,15 +7,15 @@
 
 
 % directory of histology
-processed_images_folder = 'C:\Drive\Histology\brainX\processed'; 
+processed_images_folder = 'C:\Users\Kacper\Desktop\LDTg\histology\KK013_CCF\processed';
 
 % name the saved probe points, to avoid overwriting another set of probes going in the same folder
 probe_save_name_suffix = ''; 
 
 % directory of reference atlas files
-annotation_volume_location = 'C:\Drive\Histology\annotation_volume_10um_by_index.npy';
-structure_tree_location = 'C:\Drive\Histology\structure_tree_safe_2017.csv';
-template_volume_location = 'C:\Drive\Histology\template_volume_10um.npy';
+annotation_volume_location = 'C:\Users\Kacper\Desktop\AllenAtlas\annotation_volume_10um_by_index.npy';
+structure_tree_location = 'C:\Users\Kacper\Desktop\AllenAtlas\structure_tree_safe_2017.csv';
+template_volume_location = 'C:\Users\Kacper\Desktop\AllenAtlas\template_volume_10um.npy';
 
 % plane to view ('coronal', 'sagittal', 'transverse')
 plane = 'coronal';
