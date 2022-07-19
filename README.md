@@ -1,3 +1,22 @@
+## How to use this fork?
+
+This version of [allenCCF repository](https://github.com/cortex-lab/allenCCF) allows to get not only the probe tract in Allen atlas space, but also coordinates of each electrode together with corresponding anatomical labels. Each label comes in 2 versions: one according to the standard Allen atlas (CCF) and one according to the [updated atlas](https://kimlab.io/brain-map/atlas/) from Kim's lab (FP), which aimed to resolved anatomical discrepancies between Allen and Paxinos atlases. 
+
+To process your histology, add the [npy-matlab](https://github.com/kwikteam/npy-matlab) repo to your Matlab path and follow the instructions from the original [wiki](https://github.com/cortex-lab/allenCCF/wiki).
+
+When you have the probe tracts, run **Display_Probe_and_Get_Electrodes.m** instead of **Display_Probe_Track.m**. This will generate coordinates of each row of electrodes along the probes (=shanks).
+
+Next, run **Convert_Electrodes_CCF_to_FP.m** to get full list of electrode rows together with corresponding anatomical labels in both reference frames. It will be saved as .csv file.
+
+So the full pipeline for processing histology is:
+
+* **Process_Histology.m** - preprocess your images - run this section by section, otherwise it doesn't work
+* **Navigate_Atlas_and_Register_Slices.m** - coregister images to Allen atlas, then trace all probes (=shanks)
+* **Display_Probe_and_Get_Electrodes.m** - display tracts and store coordinates
+* **Convert_Electrodes_CCF_to_FP.m** - save anatomical labels
+
+KK, Haesler Lab 2022
+
 # allen CCF tools
 
 Some code to work with the Allen Inst Mouse Brain CCF data, specifically the 10µm voxel 2017 version. See the Wiki for detailed instructions.
